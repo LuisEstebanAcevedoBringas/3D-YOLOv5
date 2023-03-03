@@ -1,0 +1,15 @@
+#Yanai servers
+# train:  /host/space0/gibran/dataset/HandGestures/IPN_new_dataset/yolo/train/
+# val:    /host/space0/gibran/dataset/HandGestures/IPN_new_dataset/yolo/valid/
+# test:   /host/space0/gibran/dataset/HandGestures/IPN_new_dataset/yolo/valid/
+
+#Local
+train:  F:/IPN_Hand/YOLO_annots/dummy_set/
+val:    F:/IPN_Hand/YOLO_annots/dummy_set/
+test:   F:/IPN_Hand/YOLO_annots/valid_dummy/
+
+# number of classes
+nc: 15
+
+# class names
+names: ["D0X", "B0A", "B0B", "G01", "G02", "G03", "G04", "G05", "G06", "G07", "G08", "G09", "G10", "G11", "G12"]
