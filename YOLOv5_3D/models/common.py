@@ -55,9 +55,9 @@ class Conv_3D(nn.Module):
         self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
 
     def forward(self, x):
-        print("input Conv3d", x.size())
-        print("output Conv3d", self.act(self.bn(self.conv(x))).size())
-        pdb.set_trace()
+        # print("input Conv3d", x.size())
+        # print("output Conv3d", self.act(self.bn(self.conv(x))).size())
+        # pdb.set_trace()
         x = self.act(self.bn(self.conv(x)))
         return x[:, :, 0, :, :] if x.shape[2] == 1 else x
 
@@ -75,11 +75,11 @@ class C3_3D(nn.Module):
         self.m = nn.Sequential(*(Bottleneck_3D(c_, c_, shortcut, g, e=1.0) for _ in range(n)))
 
     def forward(self, x):
-        print("Entrada C3_3D: ", x.size())
-        pdb.set_trace()
-        x = self.cv3(torch.cat((self.m(self.cv1(x)), self.cv2(x)), 1))
-        print("Salida C3_3D: ", x.size())
-        pdb.set_trace()
+        # print("Entrada C3_3D: ", x.size())
+        # pdb.set_trace()
+        # x = self.cv3(torch.cat((self.m(self.cv1(x)), self.cv2(x)), 1))
+        # print("Salida C3_3D: ", x.size())
+        # pdb.set_trace()
         return x[:, :, 0, :, :] if x.shape[2] == 1 else x
 
 class Bottleneck_3D(nn.Module):
@@ -92,8 +92,8 @@ class Bottleneck_3D(nn.Module):
         self.add = shortcut and c1 == c2
 
     def forward(self, x):
-        print("Entrada bottleneck: ", x.size())
-        print("Salida bottleneck: ", (x + self.cv2(self.cv1(x)) if self.add else self.cv2(self.cv1(x))).size())
+        # print("Entrada bottleneck: ", x.size())
+        # print("Salida bottleneck: ", (x + self.cv2(self.cv1(x)) if self.add else self.cv2(self.cv1(x))).size())
         return x + self.cv2(self.cv1(x)) if self.add else self.cv2(self.cv1(x))
 
 #####################################################################################################################
