@@ -657,7 +657,8 @@ class LoadImagesAndLabels(Dataset):
         hyp = self.hyp
 
         prev_stack = []
-        n = 6
+        # n = 6
+        n = 2
         paths_stack = generate_stack(self.im_files[index], n)
         img_init = cv2.imread(paths_stack[0])
 
