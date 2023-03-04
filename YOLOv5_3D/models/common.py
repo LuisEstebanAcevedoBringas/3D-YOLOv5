@@ -44,6 +44,18 @@ def autopad(k, p=None, d=1):  # kernel, padding, dilation
 
 #####################################################################################################################
 
+
+class TemporalAvgPool3d(nn.Module):
+    def __init__(self):
+        super().__init__()
+
+    def forward(self, x):
+        # print("input of TemporalAvgPool3d: ", x.size())
+        x = torch.mean(x, dim=2)
+        # print("output of TemporalAvgPool3d: ", x.size())
+        # pdb.set_trace()
+        return x
+
 class Conv_3D(nn.Module):
     # Standard convolution with args(ch_in, ch_out, kernel, stride, padding, groups, dilation, activation)
     default_act = nn.SiLU()  # default activation
@@ -66,18 +78,18 @@ class Conv_3D(nn.Module):
 
 class C3_3D(nn.Module):
     # CSP Bottleneck with 3 convolutions
-    def __init__(self, c1, c2, n=1, shortcut=True, g=1, e=0.5):  # ch_in, ch_out, number, shortcut, groups, expansion
+    def __init__(self, c1, c2, k, tk=1 ,n=1, shortcut=True, g=1, e=0.5):  # ch_in, ch_out, number, shortcut, groups, expansion
         super().__init__()
         c_ = int(c2 * e)  # hidden channels 
         self.cv1 = Conv_3D(c1, c_, 1, 1)
         self.cv2 = Conv_3D(c1, c_, 1, 1)
-        self.cv3 = Conv_3D(2 * c_, c2, 1, 1)  # optional act=FReLU(c2)
+        self.cv3 = Conv_3D(2 * c_, c2, 1, 1, tk)  # optional act=FReLU(c2)
         self.m = nn.Sequential(*(Bottleneck_3D(c_, c_, shortcut, g, e=1.0) for _ in range(n)))
 
     def forward(self, x):
         # print("Entrada C3_3D: ", x.size())
         # pdb.set_trace()
-        # x = self.cv3(torch.cat((self.m(self.cv1(x)), self.cv2(x)), 1))
+        x = self.cv3(torch.cat((self.m(self.cv1(x)), self.cv2(x)), 1))
         # print("Salida C3_3D: ", x.size())
         # pdb.set_trace()
         return x[:, :, 0, :, :] if x.shape[2] == 1 else x
@@ -371,8 +383,11 @@ class Concat(nn.Module):
         self.d = dimension
 
     def forward(self, x):
+        # print("\n start concat \n")
         # print ("/*/*/*/*/*/*/*/*/* x del concat: ", type(x))
+        # print ("/*/*/*/*/*/*/*/*/* len de x del concat: ", len(x))
         # print("/*/*/*/*/*/*/*/*/* dimension del concat: ", self.d)
+        # print("\n end concat \n")
         # pdb.set_trace()
         return torch.cat(x, self.d)
 
