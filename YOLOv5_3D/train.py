@@ -154,7 +154,7 @@ def train(hyp, opt, device, callbacks):  # hyp is path/to/hyp.yaml or hyp dictio
         loggers.on_params_update({'batch_size': batch_size})
 
     print(model)
-    # pdb.set_trace()
+    pdb.set_trace()
 
     # Optimizer
     nbs = 64  # nominal batch size
@@ -442,7 +442,7 @@ def parse_opt(known=False):
     parser = argparse.ArgumentParser()
 
     ############################################### YanaiLab config ######################################################
-    # parser.add_argument('--weights', type=str, default=ROOT / '../weights/yolov5s.pt', help='initial weights path')
+    # parser.add_argument('--weights', type=str, default=ROOT / '../yolov5/yolov5s-cls.pt', help='initial weights path')
     # parser.add_argument('--cfg', type=str, default=ROOT /  './models/yolov5s_3D_C0_n2.yaml', help='model.yaml path')
     # parser.add_argument('--data', type=str, default=ROOT / './data/IPN_hand_new.yaml', help='dataset.yaml path')
     # parser.add_argument('--hyp', type=str, default=ROOT / './data/hyps/hyp.scratch-low.yaml', help='hyperparameters path')
@@ -456,7 +456,7 @@ def parse_opt(known=False):
 
     ################################################# Local config #######################################################
     parser.add_argument('--weights', type=str, default=ROOT / '../weights/yolov5s.pt', help='initial weights path')
-    parser.add_argument('--cfg', type=str, default=ROOT /  './models/yolov5s_3D_C0_n2.yaml', help='model.yaml path')
+    parser.add_argument('--cfg', type=str, default=ROOT /  './models/yolov5s_3D_C3_n2.yaml', help='model.yaml path')
     parser.add_argument('--data', type=str, default=ROOT / './data/IPN_hand_new.yaml', help='dataset.yaml path')
     parser.add_argument('--hyp', type=str, default=ROOT / './data/hyps/hyp.scratch-low.yaml', help='hyperparameters path')
     # parser.add_argument('--epochs', type=int, default=100, help='total training epochs')

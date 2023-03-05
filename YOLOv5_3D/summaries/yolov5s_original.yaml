@@ -1,8 +1,8 @@
                 from  n    params  module                                  arguments
-0                -1  1      3520  models.common.Conv_3D                   [3, 32, 6, 2, 1, 1, 2]
-1                -1  1     18560  models.common.Conv_3D                   [32, 64, 3, 2, 1, 1, 1]
-2                -1  1     18816  models.common.C3_3D                     [64, 64, 1]
-3                -1  1    147712  models.common.Conv_3D                   [64, 128, 3, 2, 2, 1, 1]
+0                -1  1      3520  models.common.Conv                      [3, 32, 6, 2, 2]
+1                -1  1     18560  models.common.Conv                      [32, 64, 3, 2]
+2                -1  1     18816  models.common.C3                        [64, 64, 1]
+3                -1  1     73984  models.common.Conv                      [64, 128, 3, 2]
 4                -1  2    115712  models.common.C3                        [128, 128, 2]
 5                -1  1    295424  models.common.Conv                      [128, 256, 3, 2]
 6                -1  3    625152  models.common.C3                        [256, 256, 3]
@@ -24,56 +24,56 @@
 22          [-1, 10]  1         0  models.common.Concat                    [1]
 23                -1  1   1182720  models.common.C3                        [512, 512, 1, False]
 24      [17, 20, 23]  1     53940  models.yolo.Detect                      [15, [[10, 13, 16, 30, 33, 23], [30, 61, 62, 45, 59, 119], [116, 90, 156, 198, 373, 326]], [128, 256, 512]]
-YOLOv5s_3D_C1_n2 summary: 215 layers, 7133812 parameters, 7133812 gradients
+YOLOv5s summary: 214 layers, 7060084 parameters, 7060084 gradients, 16.1 GFLOPs
 
-Transferred 334/349 items from ..\weights\yolov5s.pt
-AMP: checks failed , disabling Automatic Mixed Precision. See https://github.com/ultralytics/yolov5/issues/7908
+Transferred 342/349 items from YOLOv5\..\weights\yolov5s.pt
+AMP: checks passed 
 DetectionModel(
   (model): Sequential(
-    (0): Conv_3D(
-      (conv): Conv3d(3, 32, kernel_size=(1, 6, 6), stride=(1, 2, 2), padding=(0, 2, 2), bias=False)
-      (bn): BatchNorm3d(32, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+    (0): Conv(
+      (conv): Conv2d(3, 32, kernel_size=(6, 6), stride=(2, 2), padding=(2, 2), bias=False)
+      (bn): BatchNorm2d(32, eps=0.001, momentum=0.03, affine=True, track_running_stats=True)
       (act): SiLU(inplace=True)
     )
-    (1): Conv_3D(
-      (conv): Conv3d(32, 64, kernel_size=(1, 3, 3), stride=(1, 2, 2), padding=(0, 1, 1), bias=False)
-      (bn): BatchNorm3d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+    (1): Conv(
+      (conv): Conv2d(32, 64, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1), bias=False)
+      (bn): BatchNorm2d(64, eps=0.001, momentum=0.03, affine=True, track_running_stats=True)
       (act): SiLU(inplace=True)
     )
-    (2): C3_3D(
-      (cv1): Conv_3D(
-        (conv): Conv3d(64, 32, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
-        (bn): BatchNorm3d(32, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+    (2): C3(
+      (cv1): Conv(
+        (conv): Conv2d(64, 32, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn): BatchNorm2d(32, eps=0.001, momentum=0.03, affine=True, track_running_stats=True)
         (act): SiLU(inplace=True)
       )
-      (cv2): Conv_3D(
-        (conv): Conv3d(64, 32, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
-        (bn): BatchNorm3d(32, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (cv2): Conv(
+        (conv): Conv2d(64, 32, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn): BatchNorm2d(32, eps=0.001, momentum=0.03, affine=True, track_running_stats=True)
         (act): SiLU(inplace=True)
       )
-      (cv3): Conv_3D(
-        (conv): Conv3d(64, 64, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
-        (bn): BatchNorm3d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (cv3): Conv(
+        (conv): Conv2d(64, 64, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (bn): BatchNorm2d(64, eps=0.001, momentum=0.03, affine=True, track_running_stats=True)
         (act): SiLU(inplace=True)
       )
       (m): Sequential(
-        (0): Bottleneck_3D(
-          (cv1): Conv_3D(
-            (conv): Conv3d(32, 32, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
-            (bn): BatchNorm3d(32, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (0): Bottleneck(
+          (cv1): Conv(
+            (conv): Conv2d(32, 32, kernel_size=(1, 1), stride=(1, 1), bias=False)
+            (bn): BatchNorm2d(32, eps=0.001, momentum=0.03, affine=True, track_running_stats=True)
             (act): SiLU(inplace=True)
           )
-          (cv2): Conv_3D(
-            (conv): Conv3d(32, 32, kernel_size=(1, 3, 3), stride=(1, 1, 1), padding=(0, 1, 1), bias=False)
-            (bn): BatchNorm3d(32, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+          (cv2): Conv(
+            (conv): Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+            (bn): BatchNorm2d(32, eps=0.001, momentum=0.03, affine=True, track_running_stats=True)
             (act): SiLU(inplace=True)
           )
         )
       )
     )
-    (3): Conv_3D(
-      (conv): Conv3d(64, 128, kernel_size=(2, 3, 3), stride=(1, 2, 2), padding=(0, 1, 1), bias=False)
-      (bn): BatchNorm3d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+    (3): Conv(
+      (conv): Conv2d(64, 128, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1), bias=False)
+      (bn): BatchNorm2d(128, eps=0.001, momentum=0.03, affine=True, track_running_stats=True)
       (act): SiLU(inplace=True)
     )
     (4): C3(
@@ -347,7 +347,6 @@ DetectionModel(
       (act): SiLU(inplace=True)
     )
     (22): Concat()
-    (23): C3(
       (cv1): Conv(
         (conv): Conv2d(512, 256, kernel_size=(1, 1), stride=(1, 1), bias=False)
         (bn): BatchNorm2d(256, eps=0.001, momentum=0.03, affine=True, track_running_stats=True)

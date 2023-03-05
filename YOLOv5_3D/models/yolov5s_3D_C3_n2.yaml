@@ -16,15 +16,15 @@ backbone:
     # input [batch, 3, 6, width, height]
     [-1, 1, Conv_3D, [64, 6, 2, 1, 1, 2]],            # 0-P1/2 -> Params -> ch_out, k, s, tk, ts, p 
     [-1, 1, Conv_3D, [128, 3, 2, 1, 1, 1]],           # 1-P2/4 -> Params -> ch_out, k, s, tk, ts, p
-    [-1, 3, C3_3D, [128]],                            # 2
+    [-1, 3, C3_3D, [128, 1]],                         # 2
     # first setup
     [-1, 1, Conv_3D, [256, 3, 2, 1, 1, 1]],           # 3-P3/8 -> second concat  -> Params -> ch_out, k, s, tk, ts, p 
     [-1, 1, TemporalAvgPool3d, []],                   # 4 -> TempAvgPool for concat #2
-    [-2, 6, C3_3D, [256]],                            # 5 
+    [-2, 6, C3_3D, [256, 1]],                         # 5 
     # second setup
     [-1, 1, Conv_3D, [512, 3, 2, 1, 1, 1]],           # 6-P4/16 -> first concat
     [-1, 1, TemporalAvgPool3d, []],                   # 7 -> TempAvgPool for concat #1
-    [-2, 9, C3_3D, [512]],                            # 8                       
+    [-2, 9, C3_3D, [512, 1]],                          # 8                       
     [-1, 1, Conv_3D, [1024, 3, 2, 1, 1, 1]],          # 9-P5/32
     [-1, 3, C3_3D, [1024, 2]],                        # 10
     # third setup

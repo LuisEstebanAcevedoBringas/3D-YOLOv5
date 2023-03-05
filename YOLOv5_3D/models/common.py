@@ -78,7 +78,7 @@ class Conv_3D(nn.Module):
 
 class C3_3D(nn.Module):
     # CSP Bottleneck with 3 convolutions
-    def __init__(self, c1, c2, k, tk=1 ,n=1, shortcut=True, g=1, e=0.5):  # ch_in, ch_out, number, shortcut, groups, expansion
+    def __init__(self, c1, c2, tk=1 ,n=1, shortcut=True, g=1, e=0.5):  # ch_in, ch_out, number, shortcut, groups, expansion
         super().__init__()
         c_ = int(c2 * e)  # hidden channels 
         self.cv1 = Conv_3D(c1, c_, 1, 1)
