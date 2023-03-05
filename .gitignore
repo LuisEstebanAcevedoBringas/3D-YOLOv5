@@ -7,4 +7,5 @@ YOLOv5/wandb
 models_Yanai
 YOLOv5/runs
 weights
+extras
 wandb
