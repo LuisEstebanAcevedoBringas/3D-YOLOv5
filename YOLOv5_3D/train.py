@@ -47,7 +47,7 @@ from models.yolo import Model
 from utils.autoanchor import check_anchors
 from utils.autobatch import check_train_batch_size
 from utils.callbacks import Callbacks
-from utils.dataloaders import create_dataloader
+# from utils.dataloaders import create_dataloader
 from utils.dataloader3D import create_dataloader3D
 from utils.downloads import attempt_download, is_url
 from utils.general import (LOGGER, TQDM_BAR_FORMAT, check_amp, check_dataset, check_file, check_git_info,
@@ -154,7 +154,7 @@ def train(hyp, opt, device, callbacks):  # hyp is path/to/hyp.yaml or hyp dictio
         loggers.on_params_update({'batch_size': batch_size})
 
     print(model)
-    pdb.set_trace()
+    # pdb.set_trace()
 
     # Optimizer
     nbs = 64  # nominal batch size
@@ -205,7 +205,7 @@ def train(hyp, opt, device, callbacks):  # hyp is path/to/hyp.yaml or hyp dictio
                                                 image_weights=opt.image_weights,
                                                 quad=opt.quad,
                                                 prefix=colorstr('train: '),
-                                                shuffle=True,)
+                                                shuffle=True)
                                                 #   seed=opt.seed)
     labels = np.concatenate(dataset.labels, 0)
     mlc = int(labels[:, 0].max())  # max label class
@@ -461,8 +461,8 @@ def parse_opt(known=False):
     parser.add_argument('--hyp', type=str, default=ROOT / './data/hyps/hyp.scratch-low.yaml', help='hyperparameters path')
     # parser.add_argument('--epochs', type=int, default=100, help='total training epochs')
     parser.add_argument('--epochs', type=int, default=30, help='total training epochs') #Test epochs
-    parser.add_argument('--batch-size', type=int, default=8, help='total batch size for all GPUs, -1 for autobatch')
-    parser.add_argument('--workers', type=int, default=4, help='max dataloader workers (per RANK in DDP mode)')
+    parser.add_argument('--batch-size', type=int, default=1, help='total batch size for all GPUs, -1 for autobatch')
+    parser.add_argument('--workers', type=int, default=1, help='max dataloader workers (per RANK in DDP mode)')
     parser.add_argument('--device', default='0', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
     #####################################################################################################################
 

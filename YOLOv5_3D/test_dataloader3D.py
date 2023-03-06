@@ -29,8 +29,8 @@ from torch.utils.data import DataLoader, Dataset, dataloader, distributed
 from tqdm import tqdm
 import pdb
 
-# from utils.augmentations import (Albumentations, augment_hsv, classify_albumentations, classify_transforms, copy_paste,
-#                                 cutout, letterbox, mixup, random_perspective)
+from utils.augmentations import (Albumentations, augment_hsv, classify_albumentations, classify_transforms, copy_paste,
+                                cutout, letterbox, mixup, random_perspective)
 from utils.augmentations3D import (Albumentations, augment_hsv, classify_albumentations, classify_transforms, copy_paste,
                                 cutout, letterbox, mixup, random_perspective, random_perspective_Luiggi, augment_hsv_Luiggi, get_random_perspective_values)
 from utils.general import (DATASETS_DIR, LOGGER, NUM_THREADS, check_dataset, check_requirements, check_yaml, clean_str,
@@ -657,8 +657,10 @@ class LoadImagesAndLabels(Dataset):
         hyp = self.hyp
 
         prev_stack = []
-        # n = 6
-        n = 2
+        n = 6
+
+        # n = 2
+        # paths_stack = generate_stack(self.im_files[index], n)
         img_init = cv2.imread(self.im_files[index])
 
         #We generate all the parameters before so all the images/mosaics have the same transfomations. 
@@ -768,7 +770,7 @@ class LoadImagesAndLabels(Dataset):
 
         final_volume = np.array(final_volume)
         final_volume = torch.from_numpy(final_volume)
-        final_volume = final_volume.permute(1, 0, 2, 3) # tam_vol, channels, width, height -> channels, tam_vol, width, height
+        # final_volume = final_volume.permute(1, 0, 2, 3) # tam_vol, channels, width, height -> channels, tam_vol, width, height
         # print("final volume: ", final_volume.size())
 
         return final_volume, labels_out, self.im_files[index], shapes
@@ -1360,6 +1362,10 @@ def draw_bboxes(annots, img):
     return img
 
 def save_image_with_bboxes(annots, img_tensor, file_name):
+    # print(img_tensor.size())
+    # img_tensor = torch.squeeze(img_tensor, dim=1)
+    # print(img_tensor.size())
+    # pdb.set_trace()
     img = tensor_to_image(img_tensor)
     img_with_bboxes = draw_bboxes(annots, img)
     img_with_bboxes.save(file_name, format='JPEG')
@@ -1449,36 +1455,41 @@ if __name__ == '__main__':
     parser.add_argument('--cfg', type=str, default='yolov5s.yaml', help='model.yaml')
     parser.add_argument('--batch-size', type=int, default=1, help='total batch size for all GPUs')
     parser.add_argument('--data-path', type=str, default='F:/IPN_Hand/YOLO_annots/train/', help='dataset path')
-    parser.add_argument('--device', default='0', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
+    parser.add_argument('--device', default='', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
     parser.add_argument('--hyp', type=str, default=ROOT / 'data/hyps/hyp.scratch-low.yaml', help='hyperparameters path')
     opt = parser.parse_args()
     opt.cfg = check_yaml(opt.cfg)  # check YAML
     with open(opt.hyp, errors='ignore') as f:
         hyp = yaml.safe_load(f)  # load hyps dict
 
-    data_loader, dataset = create_dataloader3D(opt.data_path,
-                                            640,  # image size
-                                            opt.batch_size,
-                                            32,   # stride
-                                            hyp=hyp,
-                                            augment=False)
-    labels = np.concatenate(dataset.labels, 0)
-    mlc = int(labels[:, 0].max())  # max label class
-    print(f'Max label class in the dataset: {mlc}')
 
-    # Example on how to show the outputs of getitem from the dataset class
-    idx_ = 443
-    data_i = dataset.__getitem__(idx_) #data_i = imgs, targets, paths, shapes
+    for x in range (3):
+        data_loader, dataset = create_dataloader3D(opt.data_path,
+                                                640,  # image size
+                                                opt.batch_size,
+                                                32,   # stride
+                                                hyp=hyp,
+                                                augment=True)
+        labels = np.concatenate(dataset.labels, 0)
+        mlc = int(labels[:, 0].max())  # max label class
+        print(f'Max label class in the dataset: {mlc}')
 
-    print(f'\nlabels [{idx_ + 1}]:', data_i[1])
-    print(f'path [{idx_ + 1}]:', data_i[2])
-    for x in range(len(data_i[0])):
-        save_image_with_bboxes(data_i[1].tolist(), data_i[0][x], f'image_{idx_+1}_{x+1}.jpg')
-    print(f'image_{idx_ + 1}.jpg saved with the {idx_ + 1}`th sample of the dataset (using augmentations)')
-    # Example on how navigate trough the dataloader class
-    # pdb.set_trace()
-    batch = next(iter(data_loader))
-    print(f'\n{len(batch)} outputs of a single batch of size {opt.batch_size}:')
-    # pdb.set_trace()
-    imgs, targets, paths, _ = batch   # as used in train.py of Yolov5
-    print(imgs.size())
+        # Example on how to show the outputs of getitem from the dataset class
+    
+        idx_ = 122
+        print(idx_)
+        data_i = dataset.__getitem__(idx_) #data_i = imgs, targets, paths, shapes
+
+        print(f'\nlabels [{idx_ + 1}]:', data_i[1])
+        print(f'path [{idx_ + 1}]:', data_i[2])
+        for x in range(len(data_i[0])):
+            save_image_with_bboxes(data_i[1].tolist(), data_i[0][x], f'image_{idx_+1}_{x+1}.jpg')
+        print(f'image_{idx_ + 1}.jpg saved with the {idx_ + 1}`th sample of the dataset (using augmentations)')
+        # Example on how navigate trough the dataloader class
+        # pdb.set_trace()
+        batch = next(iter(data_loader))
+        print(f'\n{len(batch)} outputs of a single batch of size {opt.batch_size}:')
+        # pdb.set_trace()
+        imgs, targets, paths, _ = batch   # as used in train.py of Yolov5
+        print(imgs.size())
+        idx_ = idx_ + 1

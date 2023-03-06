@@ -7,16 +7,16 @@ Usage:
 
 Usage - formats:
     $ python val.py --weights yolov5s.pt                 # PyTorch
-                              yolov5s.torchscript        # TorchScript
-                              yolov5s.onnx               # ONNX Runtime or OpenCV DNN with --dnn
-                              yolov5s_openvino_model     # OpenVINO
-                              yolov5s.engine             # TensorRT
-                              yolov5s.mlmodel            # CoreML (macOS-only)
-                              yolov5s_saved_model        # TensorFlow SavedModel
-                              yolov5s.pb                 # TensorFlow GraphDef
-                              yolov5s.tflite             # TensorFlow Lite
-                              yolov5s_edgetpu.tflite     # TensorFlow Edge TPU
-                              yolov5s_paddle_model       # PaddlePaddle
+                                yolov5s.torchscript        # TorchScript
+                                yolov5s.onnx               # ONNX Runtime or OpenCV DNN with --dnn
+                                yolov5s_openvino_model     # OpenVINO
+                                yolov5s.engine             # TensorRT
+                                yolov5s.mlmodel            # CoreML (macOS-only)
+                                yolov5s_saved_model        # TensorFlow SavedModel
+                                yolov5s.pb                 # TensorFlow GraphDef
+                                yolov5s.tflite             # TensorFlow Lite
+                                yolov5s_edgetpu.tflite     # TensorFlow Edge TPU
+                                yolov5s_paddle_model       # PaddlePaddle
 """
 
 import argparse
@@ -38,10 +38,11 @@ ROOT = Path(os.path.relpath(ROOT, Path.cwd()))  # relative
 
 from models.common import DetectMultiBackend
 from utils.callbacks import Callbacks
-from utils.dataloaders import create_dataloader
+# from utils.dataloaders import create_dataloader
+from utils.dataloader3D import create_dataloader3D
 from utils.general import (LOGGER, TQDM_BAR_FORMAT, Profile, check_dataset, check_img_size, check_requirements,
-                           check_yaml, coco80_to_coco91_class, colorstr, increment_path, non_max_suppression,
-                           print_args, scale_boxes, xywh2xyxy, xyxy2xywh)
+                            check_yaml, coco80_to_coco91_class, colorstr, increment_path, non_max_suppression,
+                            print_args, scale_boxes, xywh2xyxy, xyxy2xywh)
 from utils.metrics import ConfusionMatrix, ap_per_class, box_iou
 from utils.plots import output_to_target, plot_images, plot_val_study
 from utils.torch_utils import select_device, smart_inference_mode
@@ -168,19 +169,19 @@ def run(
         if pt and not single_cls:  # check --weights are trained on --data
             ncm = model.model.nc
             assert ncm == nc, f'{weights} ({ncm} classes) trained on different --data than what you passed ({nc} ' \
-                              f'classes). Pass correct combination of --weights and --data that are trained together.'
+                                f'classes). Pass correct combination of --weights and --data that are trained together.'
         model.warmup(imgsz=(1 if pt else batch_size, 3, imgsz, imgsz))  # warmup
         pad, rect = (0.0, False) if task == 'speed' else (0.5, pt)  # square inference for benchmarks
         task = task if task in ('train', 'val', 'test') else 'val'  # path to train/val/test images
-        dataloader = create_dataloader(data[task],
-                                       imgsz,
-                                       batch_size,
-                                       stride,
-                                       single_cls,
-                                       pad=pad,
-                                       rect=rect,
-                                       workers=workers,
-                                       prefix=colorstr(f'{task}: '))[0]
+        dataloader = create_dataloader3D(data[task],
+                                        imgsz,
+                                        batch_size,
+                                        stride,
+                                        single_cls,
+                                        pad=pad,
+                                        rect=rect,
+                                        workers=workers,
+                                        prefix=colorstr(f'{task}: '))[0]
 
     seen = 0
     confusion_matrix = ConfusionMatrix(nc=nc)
@@ -194,8 +195,10 @@ def run(
     loss = torch.zeros(3, device=device)
     jdict, stats, ap, ap_class = [], [], [], []
     callbacks.run('on_val_start')
-    pbar = tqdm(dataloader, desc=s, bar_format=TQDM_BAR_FORMAT)  # progress bar
-    for batch_i, (im, targets, paths, shapes) in enumerate(pbar):
+    # pbar = tqdm(dataloader, desc=s, bar_format=TQDM_BAR_FORMAT)  # progress bar
+    # for batch_i, (im, targets, paths, shapes) in enumerate(pbar):
+    print(s)
+    for batch_i, (im, targets, paths, shapes) in enumerate(dataloader):
         callbacks.run('on_val_batch_start')
         with dt[0]:
             if cuda:

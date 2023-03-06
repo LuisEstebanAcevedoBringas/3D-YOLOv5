@@ -5,12 +5,12 @@
 
 #Local
 
-train: F:/IPN_Hand/YOLO_annots/train
-val: F:/IPN_Hand/YOLO_annots/val
-test: F:/IPN_Hand/YOLO_annots/val
-# train:  F:/IPN_Hand/YOLO_annots/dummy_set/
-# val:    F:/IPN_Hand/YOLO_annots/dummy_set/
-# test:   F:/IPN_Hand/YOLO_annots/valid_dummy/
+# train: F:/IPN_Hand/YOLO_annots/train
+# val: F:/IPN_Hand/YOLO_annots/val
+# test: F:/IPN_Hand/YOLO_annots/val
+train:  F:/IPN_Hand/YOLO_annots/val
+val:    F:/IPN_Hand/YOLO_annots/dummy_set/
+test:   F:/IPN_Hand/YOLO_annots/valid_dummy/
 
 # number of classes
 nc: 15

@@ -259,7 +259,7 @@ def random_perspective_Luiggi(im,
         targets[:, 1:5] = new[i]
         # print("Las labels4 al final del rpL son: \n {}: ".format(targets))
 
-    return im, targets, i
+    return im, targets
 
 def random_perspective(im,
                     targets=(), #labels
