@@ -1462,34 +1462,30 @@ if __name__ == '__main__':
     with open(opt.hyp, errors='ignore') as f:
         hyp = yaml.safe_load(f)  # load hyps dict
 
+    data_loader, dataset = create_dataloader3D(opt.data_path,
+                                            640,  # image size
+                                            opt.batch_size,
+                                            32,   # stride
+                                            hyp=hyp,
+                                            augment=True)
+    labels = np.concatenate(dataset.labels, 0)
+    mlc = int(labels[:, 0].max())  # max label class
+    print(f'Max label class in the dataset: {mlc}')
 
-    for x in range (3):
-        data_loader, dataset = create_dataloader3D(opt.data_path,
-                                                640,  # image size
-                                                opt.batch_size,
-                                                32,   # stride
-                                                hyp=hyp,
-                                                augment=True)
-        labels = np.concatenate(dataset.labels, 0)
-        mlc = int(labels[:, 0].max())  # max label class
-        print(f'Max label class in the dataset: {mlc}')
+    # Example on how to show the outputs of getitem from the dataset class
+    idx_ = 9998
+    print(idx_)
+    data_i = dataset.__getitem__(idx_) #data_i = imgs, targets, paths, shapes
 
-        # Example on how to show the outputs of getitem from the dataset class
-    
-        idx_ = 122
-        print(idx_)
-        data_i = dataset.__getitem__(idx_) #data_i = imgs, targets, paths, shapes
-
-        print(f'\nlabels [{idx_ + 1}]:', data_i[1])
-        print(f'path [{idx_ + 1}]:', data_i[2])
-        for x in range(len(data_i[0])):
-            save_image_with_bboxes(data_i[1].tolist(), data_i[0][x], f'image_{idx_+1}_{x+1}.jpg')
-        print(f'image_{idx_ + 1}.jpg saved with the {idx_ + 1}`th sample of the dataset (using augmentations)')
-        # Example on how navigate trough the dataloader class
-        # pdb.set_trace()
-        batch = next(iter(data_loader))
-        print(f'\n{len(batch)} outputs of a single batch of size {opt.batch_size}:')
-        # pdb.set_trace()
-        imgs, targets, paths, _ = batch   # as used in train.py of Yolov5
-        print(imgs.size())
-        idx_ = idx_ + 1
+    print(f'\nlabels [{idx_ + 1}]:', data_i[1])
+    print(f'path [{idx_ + 1}]:', data_i[2])
+    for x in range(len(data_i[0])):
+        save_image_with_bboxes(data_i[1].tolist(), data_i[0][x], f'image_{idx_+1}_{x+1}.jpg')
+    print(f'image_{idx_ + 1}.jpg saved with the {idx_ + 1}`th sample of the dataset (using augmentations)')
+    # Example on how navigate trough the dataloader class
+    # pdb.set_trace()
+    batch = next(iter(data_loader))
+    print(f'\n{len(batch)} outputs of a single batch of size {opt.batch_size}:')
+    # pdb.set_trace()
+    imgs, targets, paths, _ = batch   # as used in train.py of Yolov5
+    print(imgs.size())

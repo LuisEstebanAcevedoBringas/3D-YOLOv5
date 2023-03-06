@@ -38,7 +38,7 @@ ROOT = Path(os.path.relpath(ROOT, Path.cwd()))  # relative
 
 from models.common import DetectMultiBackend
 from utils.callbacks import Callbacks
-# from utils.dataloaders import create_dataloader
+from utils.dataloaders import create_dataloader
 from utils.dataloader3D import create_dataloader3D
 from utils.general import (LOGGER, TQDM_BAR_FORMAT, Profile, check_dataset, check_img_size, check_requirements,
                             check_yaml, coco80_to_coco91_class, colorstr, increment_path, non_max_suppression,
@@ -173,7 +173,7 @@ def run(
         model.warmup(imgsz=(1 if pt else batch_size, 3, imgsz, imgsz))  # warmup
         pad, rect = (0.0, False) if task == 'speed' else (0.5, pt)  # square inference for benchmarks
         task = task if task in ('train', 'val', 'test') else 'val'  # path to train/val/test images
-        dataloader = create_dataloader3D(data[task],
+        dataloader = create_dataloader(data[task],
                                         imgsz,
                                         batch_size,
                                         stride,
@@ -268,8 +268,12 @@ def run(
 
         # Plot images
         if plots and batch_i < 3:
-            plot_images(im, targets, paths, save_dir / f'val_batch{batch_i}_labels.jpg', names)  # labels
-            plot_images(im, output_to_target(preds), paths, save_dir / f'val_batch{batch_i}_pred.jpg', names)  # pred
+            im_i = []
+            for i in range(len(im)):
+                im_i.append(im[i][0])
+            image_tensor = torch.stack(im_i, dim=0)
+            plot_images(image_tensor, targets, paths, save_dir / f'val_batch{batch_i}_labels.jpg', names)  # labels
+            plot_images(image_tensor, output_to_target(preds), paths, save_dir / f'val_batch{batch_i}_pred.jpg', names)  # pred
 
         callbacks.run('on_val_batch_end', batch_i, im, targets, paths, shapes, preds)
 

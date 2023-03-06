@@ -461,8 +461,8 @@ def parse_opt(known=False):
     parser.add_argument('--hyp', type=str, default=ROOT / './data/hyps/hyp.scratch-low.yaml', help='hyperparameters path')
     # parser.add_argument('--epochs', type=int, default=100, help='total training epochs')
     parser.add_argument('--epochs', type=int, default=30, help='total training epochs') #Test epochs
-    parser.add_argument('--batch-size', type=int, default=1, help='total batch size for all GPUs, -1 for autobatch')
-    parser.add_argument('--workers', type=int, default=1, help='max dataloader workers (per RANK in DDP mode)')
+    parser.add_argument('--batch-size', type=int, default=4, help='total batch size for all GPUs, -1 for autobatch')
+    parser.add_argument('--workers', type=int, default=8, help='max dataloader workers (per RANK in DDP mode)')
     parser.add_argument('--device', default='0', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
     #####################################################################################################################
 

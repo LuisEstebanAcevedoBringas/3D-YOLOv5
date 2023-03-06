@@ -14,7 +14,7 @@ backbone:
   # [from, number, module, args]
   [
     # input [batch, 3, 6, width, height]
-    [-1, 1, Conv_3D, [64, 6, 2, 1, 1, 2]],            # 0-P1/2 -> Params -> ch_out, k, s, tk, ts, p 
+    [-1, 1, Conv_3D_i, [64, 6, 2, 1, 1, 2]],            # 0-P1/2 -> Params -> ch_out, k, s, tk, ts, p 
     [-1, 1, Conv_3D, [128, 3, 2, 2, 1, 1]],           # 1-P2/4 -> Params -> ch_out, k, s, tk, ts, p
     [-1, 3, C3, [128]],                               # 2
     # first setup

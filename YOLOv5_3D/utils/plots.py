@@ -2,7 +2,7 @@
 """
 Plotting utils
 """
-
+import pdb
 import contextlib
 import math
 import os
@@ -236,7 +236,7 @@ def plot_images(images, targets, paths=None, fname='images.jpg', names=None):
 
     max_size = 1920  # max image size
     max_subplots = 16  # max image subplots, i.e. 4x4
-    bs, _, _, h, w = images.shape  # batch size, _, height, width
+    bs, _, h, w = images.shape  # batch size, _, height, width
     bs = min(bs, max_subplots)  # limit plot images
     ns = np.ceil(bs ** 0.5)  # number of subplots (square)
     if np.max(images[0]) <= 1:

@@ -2,7 +2,8 @@
 """
 Logging utils
 """
-
+import pdb
+import numpy as np
 import os
 import warnings
 from pathlib import Path
@@ -171,7 +172,11 @@ class Loggers():
         if self.plots:
             if ni < 3:
                 f = self.save_dir / f'train_batch{ni}.jpg'  # filename
-                plot_images(imgs, targets, paths, f)
+                im_i = []
+                for i in range(len(imgs)):
+                    im_i.append(imgs[i][0])
+                image_tensor = torch.stack(im_i, dim=0)
+                plot_images(image_tensor, targets, paths, f)
                 if ni == 0 and self.tb and not self.opt.sync_bn:
                     log_tensorboard_graph(self.tb, model, imgsz=(self.opt.imgsz, self.opt.imgsz))
             if ni == 10 and (self.wandb or self.clearml):

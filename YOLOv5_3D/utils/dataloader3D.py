@@ -768,7 +768,7 @@ class LoadImagesAndLabels(Dataset):
 
         final_volume = np.array(final_volume)
         final_volume = torch.from_numpy(final_volume)
-        final_volume = final_volume.permute(1, 0, 2, 3) # tam_vol, channels, width, height -> channels, tam_vol, width, height
+        # final_volume = final_volume.permute(1, 0, 2, 3) # tam_vol, channels, width, height -> channels, tam_vol, width, height
         # print("final volume: ", final_volume.size())
 
         return final_volume, labels_out, self.im_files[index], shapes
