@@ -29,8 +29,8 @@ from torch.utils.data import DataLoader, Dataset, dataloader, distributed
 from tqdm import tqdm
 import pdb
 
-from utils.augmentations import (Albumentations, augment_hsv, classify_albumentations, classify_transforms, copy_paste,
-                                cutout, letterbox, mixup, random_perspective)
+# from utils.augmentations import (Albumentations, augment_hsv, classify_albumentations, classify_transforms, copy_paste,
+#                                 cutout, letterbox, mixup, random_perspective)
 from utils.augmentations3D import (Albumentations, augment_hsv, classify_albumentations, classify_transforms, copy_paste,
                                 cutout, letterbox, mixup, random_perspective, random_perspective_Luiggi, augment_hsv_Luiggi, get_random_perspective_values)
 from utils.general import (DATASETS_DIR, LOGGER, NUM_THREADS, check_dataset, check_requirements, check_yaml, clean_str,
@@ -657,10 +657,7 @@ class LoadImagesAndLabels(Dataset):
         hyp = self.hyp
 
         prev_stack = []
-        n = 6
-
-        # n = 2
-        # paths_stack = generate_stack(self.im_files[index], n)
+        n = 3
         img_init = cv2.imread(self.im_files[index])
 
         #We generate all the parameters before so all the images/mosaics have the same transfomations. 
@@ -730,7 +727,7 @@ class LoadImagesAndLabels(Dataset):
 
         if self.augment:
             for img in prev_stack:
-                Albumentations
+                # Albumentations
                 img, labels = self.albumentations(img, labels)
                 nl = len(labels)  # update after albumentations
 
@@ -754,26 +751,38 @@ class LoadImagesAndLabels(Dataset):
                 # nl = len(labels)  # update after cutout
                 # Convert
 
-                img = img.transpose((2, 0, 1))[::-1]  # HWC to CHW, BGR to RGB
+                # cv2.imshow('image', img)
+                # cv2.waitKey(0)
+                # cv2.destroyAllWindows()
+                img = img.transpose((2, 0, 1))[::-1]  # HWC to CHW, BGR to RGB //// (640, 640, 3) -> (3, 640, 640)
                 img = np.ascontiguousarray(img)
-                final_volume.append(img)
+                final_volume.append(torch.from_numpy(img))
 
         if not self.augment: #Val process
             for img in prev_stack:
-                img = img.transpose((2, 0, 1))[::-1]  # HWC to CHW, BGR to RGB
+                # cv2.imshow('image', img)
+                # cv2.waitKey(0)
+                # cv2.destroyAllWindows()
+                img = img.transpose((2, 0, 1))[::-1]  # HWC to CHW, BGR to RGB //// (640, 640, 3) -> (3, 640, 640)
                 img = np.ascontiguousarray(img)
-                final_volume.append(img)
+                final_volume.append(torch.from_numpy(img))
 
         labels_out = torch.zeros((nl, 6))
         if nl:
             labels_out[:, 1:] = torch.from_numpy(labels)
 
-        final_volume = np.array(final_volume)
-        final_volume = torch.from_numpy(final_volume)
+        #return torch.stack([torch.from_numpy(img), torch.from_numpy(ir)], dim=1), labels_out, self.img_files[index], shapes # stacked_images.shape = [3, 2, 640, 640]
+
+        # final_volume = np.array(final_volume) #We convert the list into a ndarray
+        # final_volume = torch.from_numpy(final_volume) #Then we convert the ndarray into a torch tensor
         # final_volume = final_volume.permute(1, 0, 2, 3) # tam_vol, channels, width, height -> channels, tam_vol, width, height
         # print("final volume: ", final_volume.size())
 
-        return final_volume, labels_out, self.im_files[index], shapes
+        # return final_volume, labels_out, self.im_files[index], shapes
+        final_volume = torch.stack(final_volume, dim=1)
+        pdb.set_trace()
+        return final_volume, labels_out, self.im_files[index], shapes # stacked_images.shape = [3, 2, 640, 640]
+    
 
 # ------------------------ Luiggi ------------------------
 
@@ -1362,10 +1371,6 @@ def draw_bboxes(annots, img):
     return img
 
 def save_image_with_bboxes(annots, img_tensor, file_name):
-    # print(img_tensor.size())
-    # img_tensor = torch.squeeze(img_tensor, dim=1)
-    # print(img_tensor.size())
-    # pdb.set_trace()
     img = tensor_to_image(img_tensor)
     img_with_bboxes = draw_bboxes(annots, img)
     img_with_bboxes.save(file_name, format='JPEG')
@@ -1455,7 +1460,7 @@ if __name__ == '__main__':
     parser.add_argument('--cfg', type=str, default='yolov5s.yaml', help='model.yaml')
     parser.add_argument('--batch-size', type=int, default=1, help='total batch size for all GPUs')
     parser.add_argument('--data-path', type=str, default='F:/IPN_Hand/YOLO_annots/train/', help='dataset path')
-    parser.add_argument('--device', default='', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
+    parser.add_argument('--device', default='0', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
     parser.add_argument('--hyp', type=str, default=ROOT / 'data/hyps/hyp.scratch-low.yaml', help='hyperparameters path')
     opt = parser.parse_args()
     opt.cfg = check_yaml(opt.cfg)  # check YAML
@@ -1467,14 +1472,13 @@ if __name__ == '__main__':
                                             opt.batch_size,
                                             32,   # stride
                                             hyp=hyp,
-                                            augment=True)
+                                            augment=False)
     labels = np.concatenate(dataset.labels, 0)
     mlc = int(labels[:, 0].max())  # max label class
     print(f'Max label class in the dataset: {mlc}')
 
     # Example on how to show the outputs of getitem from the dataset class
-    idx_ = 9998
-    print(idx_)
+    idx_ = 443
     data_i = dataset.__getitem__(idx_) #data_i = imgs, targets, paths, shapes
 
     print(f'\nlabels [{idx_ + 1}]:', data_i[1])

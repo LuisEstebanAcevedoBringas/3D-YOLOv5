@@ -50,40 +50,19 @@ class TemporalAvgPool3d(nn.Module):
         super().__init__()
 
     def forward(self, x):
-        print("input of TemporalAvgPool3d: ", x.size())
-        x = torch.mean(x, dim=2)
-        print("output of TemporalAvgPool3d: ", x.size())
-        pdb.set_trace()
-        return x
-
-class Conv_3D_i(nn.Module):
-    # Standard convolution with args(ch_in, ch_out, kernel, stride, padding, groups, dilation, activation)
-    default_act = nn.SiLU()  # default activation
-
-    def __init__(self, c1, c2, k=1, s=1, tk=1, ts=1, p=0, g=1, d=1, act=True):
-        super().__init__()
-        self.conv = nn.Conv3d(c1, c2, (tk,k,k), (ts,s,s), (0,p,p), groups=g, dilation=d, bias=False)
-        self.bn = nn.BatchNorm3d(c2)
-        self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
-
-    def forward(self, x):
-        x = x.permute(0,2,1,3,4)
-        # print("input Conv3d", x.size())
-        # print("output Conv3d", self.act(self.bn(self.conv(x))).size())
+        # print("input of TemporalAvgPool3d: ", x.size())
+        x = torch.mean(x, dim=2) #TemporalAvegPool3d
+        # print("output of TemporalAvgPool3d: ", x.size())
         # pdb.set_trace()
-        x = self.act(self.bn(self.conv(x)))
-        return x[:, :, 0, :, :] if x.shape[2] == 1 else x
-
-    # def forward_fuse(self, x):
-    # return self.act(self.conv(x)
+        return x
 
 class Conv_3D(nn.Module):
     # Standard convolution with args(ch_in, ch_out, kernel, stride, padding, groups, dilation, activation)
     default_act = nn.SiLU()  # default activation
 
-    def __init__(self, c1, c2, k=1, s=1, tk=1, ts=1, p=0, g=1, d=1, act=True):
+    def __init__(self, c1, c2, k=1, s=1, tk=1, ts=1, tp=0, p=0, g=1, d=1, act=True):
         super().__init__()
-        self.conv = nn.Conv3d(c1, c2, (tk,k,k), (ts,s,s), (0,p,p), groups=g, dilation=d, bias=False)
+        self.conv = nn.Conv3d(c1, c2, (tk,k,k), (ts,s,s), (tp,p,p), groups=g, dilation=d, bias=False)
         self.bn = nn.BatchNorm3d(c2)
         self.act = self.default_act if act is True else act if isinstance(act, nn.Module) else nn.Identity()
 

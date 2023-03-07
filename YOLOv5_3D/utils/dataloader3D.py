@@ -657,8 +657,7 @@ class LoadImagesAndLabels(Dataset):
         hyp = self.hyp
 
         prev_stack = []
-        # n = 6
-        n = 2
+        n = 3
         img_init = cv2.imread(self.im_files[index])
 
         #We generate all the parameters before so all the images/mosaics have the same transfomations. 
@@ -728,7 +727,7 @@ class LoadImagesAndLabels(Dataset):
 
         if self.augment:
             for img in prev_stack:
-                Albumentations
+                # Albumentations
                 img, labels = self.albumentations(img, labels)
                 nl = len(labels)  # update after albumentations
 
@@ -752,27 +751,29 @@ class LoadImagesAndLabels(Dataset):
                 # nl = len(labels)  # update after cutout
                 # Convert
 
-                img = img.transpose((2, 0, 1))[::-1]  # HWC to CHW, BGR to RGB
+                # cv2.imshow('image', img)
+                # cv2.waitKey(0)
+                # cv2.destroyAllWindows()
+                img = img.transpose((2, 0, 1))[::-1]  # HWC to CHW, BGR to RGB //// (640, 640, 3) -> (3, 640, 640)
                 img = np.ascontiguousarray(img)
-                final_volume.append(img)
+                final_volume.append(torch.from_numpy(img))
 
         if not self.augment: #Val process
             for img in prev_stack:
-                img = img.transpose((2, 0, 1))[::-1]  # HWC to CHW, BGR to RGB
+                # cv2.imshow('image', img)
+                # cv2.waitKey(0)
+                # cv2.destroyAllWindows()
+                img = img.transpose((2, 0, 1))[::-1]  # HWC to CHW, BGR to RGB //// (640, 640, 3) -> (3, 640, 640)
                 img = np.ascontiguousarray(img)
-                final_volume.append(img)
+                final_volume.append(torch.from_numpy(img))
 
         labels_out = torch.zeros((nl, 6))
         if nl:
             labels_out[:, 1:] = torch.from_numpy(labels)
 
-        final_volume = np.array(final_volume)
-        final_volume = torch.from_numpy(final_volume)
-        # final_volume = final_volume.permute(1, 0, 2, 3) # tam_vol, channels, width, height -> channels, tam_vol, width, height
-        # print("final volume: ", final_volume.size())
-
-        return final_volume, labels_out, self.im_files[index], shapes
-
+        final_volume = torch.stack(final_volume, dim=1)
+        return final_volume, labels_out, self.im_files[index], shapes # stacked_images.shape = [bs,3, 2, 640, 640]
+    
 # ------------------------ Luiggi ------------------------
 
     def load_mosaic_Luiggi(self ,eme, s_rpv, yc, xc, indices, final_stacks):

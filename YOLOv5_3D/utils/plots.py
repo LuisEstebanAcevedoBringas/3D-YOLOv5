@@ -229,6 +229,8 @@ def output_to_target(output, max_det=300):
 @threaded
 def plot_images(images, targets, paths=None, fname='images.jpg', names=None):
     # Plot image grid with labels
+    # images = images.permute(2,1,0,3,4) Print the temporal images
+    images = images[:, :, 0, :, :]
     if isinstance(images, torch.Tensor):
         images = images.cpu().float().numpy()
     if isinstance(targets, torch.Tensor):
