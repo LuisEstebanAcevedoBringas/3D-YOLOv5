@@ -78,13 +78,13 @@ class Conv_3D(nn.Module):
 
 class C3_3D(nn.Module):
     # CSP Bottleneck with 3 convolutions
-    def __init__(self, c1, c2, k, tk=1 ,n=1, shortcut=True, g=1, e=0.5):  # ch_in, ch_out, number, shortcut, groups, expansion
+    def __init__(self, c1, c2, n=1, btk=1, btp=0 , shortcut=True, g=1, e=0.5):  # ch_in, ch_out, number, shortcut, groups, expansion
         super().__init__()
         c_ = int(c2 * e)  # hidden channels 
         self.cv1 = Conv_3D(c1, c_, 1, 1)
         self.cv2 = Conv_3D(c1, c_, 1, 1)
-        self.cv3 = Conv_3D(2 * c_, c2, 1, 1, tk)  # optional act=FReLU(c2)
-        self.m = nn.Sequential(*(Bottleneck_3D(c_, c_, shortcut, g, e=1.0) for _ in range(n)))
+        self.cv3 = Conv_3D(2 * c_, c2, 1, 1)  # optional act=FReLU(c2)
+        self.m = nn.Sequential(*(Bottleneck_3D(c_, c_, btk, btp, shortcut, g, e=1.0) for _ in range(n)))
 
     def forward(self, x):
         # print("Entrada C3_3D: ", x.size())
@@ -96,11 +96,11 @@ class C3_3D(nn.Module):
 
 class Bottleneck_3D(nn.Module):
     # Standard bottleneck
-    def __init__(self, c1, c2, shortcut=True, g=1, e=0.5):  # ch_in, ch_out, shortcut, groups, expansion
+    def __init__(self, c1, c2, btk, btp, shortcut=True, g=1, e=0.5):  # ch_in, ch_out, shortcut, groups, expansion
         super().__init__()
         c_ = int(c2 * e)  # hidden channels
         self.cv1 = Conv_3D(c1, c_, 1, 1)
-        self.cv2 = Conv_3D(c_, c2, 3, 1, 1, p=1, g=g)
+        self.cv2 = Conv_3D(c_, c2, 3, 1, btk, p=1, tp=btp, g=g)
         self.add = shortcut and c1 == c2
 
     def forward(self, x):
