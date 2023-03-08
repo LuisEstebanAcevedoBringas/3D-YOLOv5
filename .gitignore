@@ -4,11 +4,11 @@ YOLOv5_3D_3D/wandb
 YOLOv5_ConvNeXt
 YOLOv5_3D/runs
 YOLOv5_3D.zip
-YOLOv5/wandb
 models_Yanai
-YOLOv5/runs
 weights
 results
+YOLOv5
 extras
 wandb
 *.jpg
+latex

@@ -47,8 +47,8 @@ from models.yolo import Model
 from utils.autoanchor import check_anchors
 from utils.autobatch import check_train_batch_size
 from utils.callbacks import Callbacks
-# from utils.dataloaders import create_dataloader
-from utils.dataloader3D import create_dataloader3D
+from utils.dataloaders import create_dataloader
+# from utils.dataloader3D import create_dataloader3D
 from utils.downloads import attempt_download, is_url
 from utils.general import (LOGGER, TQDM_BAR_FORMAT, check_amp, check_dataset, check_file, check_git_info,
                             check_git_status, check_img_size, check_requirements, check_suffix, check_yaml, colorstr,
@@ -191,7 +191,7 @@ def train(hyp, opt, device, callbacks):  # hyp is path/to/hyp.yaml or hyp dictio
         LOGGER.info('Using SyncBatchNorm()')
 
     # Trainloader
-    train_loader, dataset = create_dataloader3D(train_path,
+    train_loader, dataset = create_dataloader(train_path,
                                                 imgsz,
                                                 batch_size // WORLD_SIZE,
                                                 gs,
@@ -213,7 +213,7 @@ def train(hyp, opt, device, callbacks):  # hyp is path/to/hyp.yaml or hyp dictio
 
     # Process 0
     if RANK in {-1, 0}:
-        val_loader = create_dataloader3D(val_path,
+        val_loader = create_dataloader(val_path,
                                         imgsz,
                                         batch_size // WORLD_SIZE * 2,
                                         gs,
@@ -456,12 +456,12 @@ def parse_opt(known=False):
 
     ################################################# Local config #######################################################
     parser.add_argument('--weights', type=str, default=ROOT / '../weights/yolov5s.pt', help='initial weights path')
-    parser.add_argument('--cfg', type=str, default=ROOT /  './models/yolov5s_3D_vf_C3_n3_full.yaml', help='model.yaml path')
+    parser.add_argument('--cfg', type=str, default=ROOT /  './models/yolov5s.yaml', help='model.yaml path')
     parser.add_argument('--data', type=str, default=ROOT / './data/IPN_hand_new.yaml', help='dataset.yaml path')
     parser.add_argument('--hyp', type=str, default=ROOT / './data/hyps/hyp.scratch-low.yaml', help='hyperparameters path')
     # parser.add_argument('--epochs', type=int, default=100, help='total training epochs')
     parser.add_argument('--epochs', type=int, default=30, help='total training epochs') #Test epochs
-    parser.add_argument('--batch-size', type=int, default=4, help='total batch size for all GPUs, -1 for autobatch')
+    parser.add_argument('--batch-size', type=int, default=8, help='total batch size for all GPUs, -1 for autobatch')
     parser.add_argument('--workers', type=int, default=8, help='max dataloader workers (per RANK in DDP mode)')
     parser.add_argument('--device', default='0', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
     #####################################################################################################################
