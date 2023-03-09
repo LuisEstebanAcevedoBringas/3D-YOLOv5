@@ -125,6 +125,7 @@ def run(
         save_dir=Path(''),
         plots=True,
         callbacks=Callbacks(),
+        clip_size = 3,
         compute_loss=None,
 ):
     # Initialize/load model and set device
@@ -181,6 +182,7 @@ def run(
                                         pad=pad,
                                         rect=rect,
                                         workers=workers,
+                                        clip_size=clip_size,
                                         prefix=colorstr(f'{task}: '))[0]
 
     seen = 0

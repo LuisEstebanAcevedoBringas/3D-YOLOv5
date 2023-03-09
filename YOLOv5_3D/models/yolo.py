@@ -174,6 +174,9 @@ class DetectionModel(BaseModel):
             with open(cfg, encoding='ascii', errors='ignore') as f:
                 self.yaml = yaml.safe_load(f)  # model dict
 
+        #Get the size of the clip
+        # clip_s = self.yaml['clip_size']
+
         # Define model
         ch = self.yaml['ch'] = self.yaml.get('ch', ch)  # input channels
         if nc and nc != self.yaml['nc']:
@@ -194,9 +197,6 @@ class DetectionModel(BaseModel):
             forward = lambda x: self.forward(x)[0] if isinstance(m, Segment) else self.forward(x)
             # m.stride = torch.tensor([s / x.shape[-2] for x in forward(torch.zeros(1, ch, s, s))])  # forward
             m.stride = torch.tensor([s / x.shape[-2] for x in forward(torch.zeros(1, ch, 3, s, s))])  # forward
-            # m.stride = torch.tensor([s / x.shape[-2] for x in forward(torch.zeros(1, ch, 4, s, s))])  # forward
-            # m.stride = torch.tensor([s / x.shape[-2] for x in forward(torch.zeros(1, ch, 5, s, s))])  # forward
-            # m.stride = torch.tensor([s / x.shape[-2] for x in forward(torch.zeros(1, ch, 6, s, s))])  # forward
             check_anchor_order(m)
             m.anchors /= m.stride.view(-1, 1, 1)
             self.stride = m.stride

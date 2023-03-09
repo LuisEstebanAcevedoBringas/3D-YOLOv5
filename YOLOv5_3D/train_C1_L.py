@@ -75,6 +75,11 @@ def train(hyp, opt, device, callbacks):  # hyp is path/to/hyp.yaml or hyp dictio
         opt.resume, opt.noval, opt.nosave, opt.workers, opt.freeze
     callbacks.run('on_pretrain_routine_start')
 
+    #Clip size
+    with open(cfg, encoding='ascii', errors='ignore') as c:
+        yaml_1 = yaml.safe_load(c)  # model dict
+    clip_size_from_yaml = yaml_1["clip_size"]
+
     # Directories
     w = save_dir / 'weights'  # weights dir
     (w.parent if evolve else w).mkdir(parents=True, exist_ok=True)  # make dir
@@ -205,7 +210,8 @@ def train(hyp, opt, device, callbacks):  # hyp is path/to/hyp.yaml or hyp dictio
                                                 image_weights=opt.image_weights,
                                                 quad=opt.quad,
                                                 prefix=colorstr('train: '),
-                                                shuffle=True)
+                                                shuffle=True,
+                                                clip_size=clip_size_from_yaml)
                                                 #   seed=opt.seed)
     labels = np.concatenate(dataset.labels, 0)
     mlc = int(labels[:, 0].max())  # max label class
@@ -224,6 +230,7 @@ def train(hyp, opt, device, callbacks):  # hyp is path/to/hyp.yaml or hyp dictio
                                         rank=-1,
                                         workers=workers * 2,
                                         pad=0.5,
+                                        clip_size=clip_size_from_yaml,
                                         prefix=colorstr('val: '))[0]
 
         if not resume:
@@ -366,6 +373,7 @@ def train(hyp, opt, device, callbacks):  # hyp is path/to/hyp.yaml or hyp dictio
                                                 save_dir=save_dir,
                                                 plots=False,
                                                 callbacks=callbacks,
+                                                clip_size = clip_size_from_yaml,
                                                 compute_loss=compute_loss)
 
             # Update best mAP
@@ -429,6 +437,7 @@ def train(hyp, opt, device, callbacks):  # hyp is path/to/hyp.yaml or hyp dictio
                         verbose=True,
                         plots=plots,
                         callbacks=callbacks,
+                        clip_size = clip_size_from_yaml,
                         compute_loss=compute_loss)  # val best model with plots
                     if is_coco:
                         callbacks.run('on_fit_epoch_end', list(mloss) + list(results) + lr, epoch, best_fitness, fi)
@@ -443,28 +452,28 @@ def parse_opt(known=False):
     parser = argparse.ArgumentParser()
 
     ############################################### YanaiLab config ######################################################
-    parser.add_argument('--weights', type=str, default=ROOT / '../yolov5/yolov5s-cls.pt', help='initial weights path')
-    parser.add_argument('--cfg', type=str, default=ROOT /  './models/yolov5s_3D_C1_L.yaml', help='model.yaml path')
-    parser.add_argument('--data', type=str, default=ROOT / './data/IPN_hand_new.yaml', help='dataset.yaml path')
-    parser.add_argument('--hyp', type=str, default=ROOT / './data/hyps/hyp.scratch-low.yaml', help='hyperparameters path')
-    # parser.add_argument('--epochs', type=int, default=100, help='total training epochs')
-    parser.add_argument('--epochs', type=int, default=30, help='total training epochs') #Test epochs
-    parser.add_argument('--batch-size', type=int, default=24, help='total batch size for all GPUs, -1 for autobatch')
-    parser.add_argument('--workers', type=int, default=8, help='max dataloader workers (per RANK in DDP mode)')
-    parser.add_argument('--device', default='3', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
-    ######################################################################################################################
-
-
-    ################################################# Local config #######################################################
-    # parser.add_argument('--weights', type=str, default=ROOT / '../weights/yolov5s.pt', help='initial weights path')
+    # parser.add_argument('--weights', type=str, default=ROOT / '../yolov5/yolov5s-cls.pt', help='initial weights path')
     # parser.add_argument('--cfg', type=str, default=ROOT /  './models/yolov5s_3D_C1_L.yaml', help='model.yaml path')
     # parser.add_argument('--data', type=str, default=ROOT / './data/IPN_hand_new.yaml', help='dataset.yaml path')
     # parser.add_argument('--hyp', type=str, default=ROOT / './data/hyps/hyp.scratch-low.yaml', help='hyperparameters path')
     # # parser.add_argument('--epochs', type=int, default=100, help='total training epochs')
     # parser.add_argument('--epochs', type=int, default=30, help='total training epochs') #Test epochs
-    # parser.add_argument('--batch-size', type=int, default=4, help='total batch size for all GPUs, -1 for autobatch')
+    # parser.add_argument('--batch-size', type=int, default=24, help='total batch size for all GPUs, -1 for autobatch')
     # parser.add_argument('--workers', type=int, default=8, help='max dataloader workers (per RANK in DDP mode)')
-    # parser.add_argument('--device', default='0', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
+    # parser.add_argument('--device', default='3', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
+    ######################################################################################################################
+
+
+    ################################################# Local config #######################################################
+    parser.add_argument('--weights', type=str, default=ROOT / '../weights/yolov5s.pt', help='initial weights path')
+    parser.add_argument('--cfg', type=str, default=ROOT /  './models/yolov5s_3D_C1_L.yaml', help='model.yaml path')
+    parser.add_argument('--data', type=str, default=ROOT / './data/IPN_hand_new.yaml', help='dataset.yaml path')
+    parser.add_argument('--hyp', type=str, default=ROOT / './data/hyps/hyp.scratch-low.yaml', help='hyperparameters path')
+    # parser.add_argument('--epochs', type=int, default=100, help='total training epochs')
+    parser.add_argument('--epochs', type=int, default=30, help='total training epochs') #Test epochs
+    parser.add_argument('--batch-size', type=int, default=4, help='total batch size for all GPUs, -1 for autobatch')
+    parser.add_argument('--workers', type=int, default=8, help='max dataloader workers (per RANK in DDP mode)')
+    parser.add_argument('--device', default='0', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
     #####################################################################################################################
 
     parser.add_argument('--imgsz', '--img', '--img-size', type=int, default=640, help='train, val image size (pixels)')

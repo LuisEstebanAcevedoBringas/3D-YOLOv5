@@ -119,6 +119,7 @@ def create_dataloader3D(path,
                     image_weights=False,
                     quad=False,
                     prefix='',
+                    clip_size = 3,
                     shuffle=False):
     if rect and shuffle:
         LOGGER.warning('WARNING ⚠️ --rect is incompatible with DataLoader shuffle, setting shuffle=False')
@@ -136,7 +137,9 @@ def create_dataloader3D(path,
             stride=int(stride),
             pad=pad,
             image_weights=image_weights,
-            prefix=prefix)
+            prefix=prefix,
+            clip_size = clip_size
+            )
 
     batch_size = min(batch_size, len(dataset))
     nd = torch.cuda.device_count()  # number of CUDA devices
@@ -449,7 +452,8 @@ class LoadImagesAndLabels(Dataset):
                 stride=32,
                 pad=0.0,
                 min_items=0,
-                prefix=''):
+                prefix='',
+                clip_size = 3):
         self.img_size = img_size
         self.augment = augment
         self.hyp = hyp
@@ -459,6 +463,7 @@ class LoadImagesAndLabels(Dataset):
         self.mosaic_border = [-img_size // 2, -img_size // 2]
         self.stride = stride
         self.path = path
+        self.clip_size = clip_size
         self.albumentations = Albumentations(size=img_size) if augment else None
 
         try:
@@ -657,7 +662,7 @@ class LoadImagesAndLabels(Dataset):
         hyp = self.hyp
 
         prev_stack = []
-        n = 3
+        n = self.clip_size
         img_init = cv2.imread(self.im_files[index])
 
         #We generate all the parameters before so all the images/mosaics have the same transfomations. 
