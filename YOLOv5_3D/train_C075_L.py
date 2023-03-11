@@ -159,7 +159,7 @@ def train(hyp, opt, device, callbacks):  # hyp is path/to/hyp.yaml or hyp dictio
         loggers.on_params_update({'batch_size': batch_size})
 
     print(model)
-    pdb.set_trace()
+    # pdb.set_trace()
 
     # Optimizer
     nbs = 64  # nominal batch size
@@ -447,29 +447,30 @@ def train(hyp, opt, device, callbacks):  # hyp is path/to/hyp.yaml or hyp dictio
 def parse_opt(known=False):
     parser = argparse.ArgumentParser()
 
+    parser.add_argument('--name', default='yolov5s_3D_C075_L', help='save to project/name')
     ############################################### YanaiLab config ######################################################
-    # parser.add_argument('--weights', type=str, default=ROOT / '../yolov5/yolov5s-cls.pt', help='initial weights path')
-    # parser.add_argument('--cfg', type=str, default=ROOT /  './models/yolov5s_3D_C05.yaml', help='model.yaml path')
-    # parser.add_argument('--data', type=str, default=ROOT / './data/IPN_hand_new.yaml', help='dataset.yaml path')
-    # parser.add_argument('--hyp', type=str, default=ROOT / './data/hyps/hyp.scratch-low.yaml', help='hyperparameters path')
-    # # parser.add_argument('--epochs', type=int, default=100, help='total training epochs')
-    # parser.add_argument('--epochs', type=int, default=30, help='total training epochs') #Test epochs
-    # parser.add_argument('--batch-size', type=int, default=24, help='total batch size for all GPUs, -1 for autobatch')
-    # parser.add_argument('--workers', type=int, default=8, help='max dataloader workers (per RANK in DDP mode)')
-    # parser.add_argument('--device', default='2', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
-    ######################################################################################################################
-
-
-    ################################################# Local config #######################################################
-    parser.add_argument('--weights', type=str, default=ROOT / '../weights/yolov5s.pt', help='initial weights path')
-    parser.add_argument('--cfg', type=str, default=ROOT /  './models/yolov5s_3D_C05.yaml', help='model.yaml path')
+    parser.add_argument('--weights', type=str, default=ROOT / '../yolov5/yolov5s-cls.pt', help='initial weights path')
+    parser.add_argument('--cfg', type=str, default=ROOT /  './models/yolov5s_3D_C075_L.yaml', help='model.yaml path')
     parser.add_argument('--data', type=str, default=ROOT / './data/IPN_hand_new.yaml', help='dataset.yaml path')
     parser.add_argument('--hyp', type=str, default=ROOT / './data/hyps/hyp.scratch-low.yaml', help='hyperparameters path')
     # parser.add_argument('--epochs', type=int, default=100, help='total training epochs')
     parser.add_argument('--epochs', type=int, default=30, help='total training epochs') #Test epochs
-    parser.add_argument('--batch-size', type=int, default=4, help='total batch size for all GPUs, -1 for autobatch')
+    parser.add_argument('--batch-size', type=int, default=32, help='total batch size for all GPUs, -1 for autobatch')
     parser.add_argument('--workers', type=int, default=8, help='max dataloader workers (per RANK in DDP mode)')
     parser.add_argument('--device', default='0', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
+    ######################################################################################################################
+
+
+    ################################################# Local config #######################################################
+    # parser.add_argument('--weights', type=str, default=ROOT / '../weights/yolov5s.pt', help='initial weights path')
+    # parser.add_argument('--cfg', type=str, default=ROOT /  './models/yolov5s_3D_C075_L.yaml', help='model.yaml path')
+    # parser.add_argument('--data', type=str, default=ROOT / './data/IPN_hand_new.yaml', help='dataset.yaml path')
+    # parser.add_argument('--hyp', type=str, default=ROOT / './data/hyps/hyp.scratch-low.yaml', help='hyperparameters path')
+    # # parser.add_argument('--epochs', type=int, default=100, help='total training epochs')
+    # parser.add_argument('--epochs', type=int, default=30, help='total training epochs') #Test epochs
+    # parser.add_argument('--batch-size', type=int, default=4, help='total batch size for all GPUs, -1 for autobatch')
+    # parser.add_argument('--workers', type=int, default=8, help='max dataloader workers (per RANK in DDP mode)')
+    # parser.add_argument('--device', default='0', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
     #####################################################################################################################
 
     parser.add_argument('--imgsz', '--img', '--img-size', type=int, default=640, help='train, val image size (pixels)')
@@ -488,7 +489,6 @@ def parse_opt(known=False):
     parser.add_argument('--optimizer', type=str, choices=['SGD', 'Adam', 'AdamW'], default='SGD', help='optimizer')
     parser.add_argument('--sync-bn', action='store_true', help='use SyncBatchNorm, only available in DDP mode')
     parser.add_argument('--project', default=ROOT / 'runs/train', help='save to project/name')
-    parser.add_argument('--name', default='yolov5s_3D_C1.5_L', help='save to project/name')
     parser.add_argument('--exist-ok', action='store_true', help='existing project/name ok, do not increment')
     parser.add_argument('--quad', action='store_true', help='quad dataloader')
     parser.add_argument('--cos-lr', action='store_true', help='cosine LR scheduler')
