@@ -666,20 +666,27 @@ class LoadImagesAndLabels(Dataset):
         img_init = cv2.imread(self.im_files[index])
 
         #We generate all the parameters before so all the images/mosaics have the same transfomations. 
-        hgain, sgain, vgain = hyp['hsv_h'], hyp['hsv_s'], hyp['hsv_v']
+        # hgain, sgain, vgain = hyp['hsv_h'], hyp['hsv_s'], hyp['hsv_v']
+        hgain, sgain, vgain = 0.015, 0.7, 0.4
         random_hsv = np.random.uniform(-1, 1, 3) * [hgain, sgain, vgain] + 1 
         random_updown = random.random()
         random_leftright = random.random()
         eme, s_rpv = get_random_perspective_values(img_init,
-                                        degrees=hyp['degrees'],
-                                        translate=hyp['translate'],
-                                        scale=hyp['scale'],
-                                        shear=hyp['shear'],
-                                        perspective=hyp['perspective'])
+                                        # degrees=hyp['degrees'],
+                                        degrees = 0.0,
+                                        # translate=hyp['translate'],
+                                        translate = 0.1,
+                                        # scale=hyp['scale'],
+                                        scale = 0.5,
+                                        # shear=hyp['shear'],
+                                        shear = 0.0,
+                                        # perspective=hyp['perspective']
+                                        perspective = 0.0
+                                        )
         #With this we have the same posicion for the images in the mosaic
         s = self.img_size
         yc, xc = (int(random.uniform(-x, 2 * s + x)) for x in self.mosaic_border)  # mosaic center x, y
-        mosaic = self.mosaic and random.random() < hyp['mosaic']
+        mosaic = self.mosaic and random.random() < 1.0#hyp['mosaic']
         
         if mosaic: # Load mosaic
             path_imgs_mosaic = []
@@ -697,7 +704,7 @@ class LoadImagesAndLabels(Dataset):
 
             # MixUp augmentation 
             # Because of the hyps the program will never enter this if
-            if random.random() < hyp['mixup']:
+            if random.random() < 0.0: #hyp['mixup']:
                 img, labels = mixup(img, labels, *self.load_mosaic(random.randint(0, self.n - 1)))
 
         else:
@@ -720,7 +727,8 @@ class LoadImagesAndLabels(Dataset):
                                                     eme,
                                                     s_rpv,
                                                     labels,
-                                                    perspective=hyp['perspective'],
+                                                    # perspective=hyp['perspective'],
+                                                    perspective = 0.0,
                                                     border=self.mosaic_border)
                 prev_stack.append(img)
 
@@ -740,13 +748,13 @@ class LoadImagesAndLabels(Dataset):
                 augment_hsv_Luiggi(img, random_hsv)
 
                 # Flip up-down
-                if random_updown < hyp['flipud']:
+                if random_updown < 0.0: #hyp['flipud']:
                     img = np.flipud(img)
                     if nl:
                         labels[:, 2] = 1 - labels[:, 2]
 
                 # Flip left-right
-                if random_leftright < hyp['fliplr']:
+                if random_leftright < 0.0: #hyp['fliplr']:
                     img = np.fliplr(img)
                     if nl:
                         labels[:, 1] = 1 - labels[:, 1]
@@ -1374,10 +1382,11 @@ def save_image_with_bboxes(annots, img_tensor, file_name):
 
 def get_info(path):
     file_name = os.path.splitext(os.path.basename(path))[0]
-    video_name = file_name.split("_")[0] + "_" + file_name.split("_")[1] + "_" + file_name.split("_")[2] + "_" + file_name.split("_")[3]
+    video_name = file_name.split("_")[0] + "_" + file_name.split("_")[1] + "_" + file_name.split("_")[2] + "_" + file_name.split("_")[3] + "_" + file_name.split("_")[4]
     # final_path = "/host/space0/gibran/dataset/HandGestures/IPN_new_dataset/frames/"
-    final_path = "F:/IPN_Hand/frames/"
-    video_indice = int(file_name.split("_")[4])
+    # final_path = "F:/IPN_Hand/frames/"
+    final_path = "C:/Users/Luis Bringas/Desktop/NEW_IPN_final_frames/"
+    video_indice = int(file_name.split("_")[5])
     return video_name, video_indice, final_path
 
 # def save_json(data):
@@ -1387,7 +1396,8 @@ def get_info(path):
 def generate_stack(path, clip_size):
     data = []
     # img_paths = "/host/space0/gibran/dataset/HandGestures/IPN_new_dataset/frames/"
-    img_paths = "F:/IPN_Hand/frames/"
+    img_paths = "C:/Users/Luis Bringas/Desktop/NEW_IPN_final_frames/"
+    # img_paths = "F:/IPN_Hand/frames/"
     video_n, video_i, _ = get_info(path)
 
     if video_i < clip_size:
@@ -1409,7 +1419,8 @@ def generate_n_stacks(paths, clip_size): # We return all the volumes of images f
     final_mosaic_stacks = []
     data = []
     # img_paths = "/host/space0/gibran/dataset/HandGestures/IPN_new_dataset/frames/"
-    img_paths = "F:/IPN_Hand/frames/"
+    # img_paths = "F:/IPN_Hand/frames/"
+    img_paths = "C:/Users/Luis Bringas/Desktop/NEW_IPN_final_frames/"
     
     for n in paths:  
         stack_n = []

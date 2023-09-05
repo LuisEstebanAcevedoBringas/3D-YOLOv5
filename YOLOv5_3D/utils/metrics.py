@@ -49,6 +49,7 @@ def ap_per_class(tp, conf, pred_cls, target_cls, plot=False, save_dir='.', names
     # Find unique classes
     unique_classes, nt = np.unique(target_cls, return_counts=True)
     nc = unique_classes.shape[0]  # number of classes, number of detections
+    # nc = 15
 
     # Create Precision-Recall curve and compute AP for each class
     px, py = np.linspace(0, 1, 1000), []  # for plotting
@@ -126,7 +127,8 @@ def compute_ap(recall, precision):
 class ConfusionMatrix:
     # Updated version of https://github.com/kaanakan/object_detection_confusion_matrix
     def __init__(self, nc, conf=0.25, iou_thres=0.45):
-        self.matrix = np.zeros((nc + 1, nc + 1))
+        # self.matrix = np.zeros((nc + 1, nc + 1)) #Original
+        self.matrix = np.zeros((nc, nc))
         self.nc = nc  # number of classes
         self.conf = conf
         self.iou_thres = iou_thres
@@ -141,11 +143,11 @@ class ConfusionMatrix:
         Returns:
             None, updates confusion matrix accordingly
         """
-        if detections is None:
-            gt_classes = labels.int()
-            for gc in gt_classes:
-                self.matrix[self.nc, gc] += 1  # background FN
-            return
+        # if detections is None:
+        #     gt_classes = labels.int()
+        #     for gc in gt_classes:
+        #         self.matrix[self.nc, gc] += 1  # background FN
+        #     return
 
         detections = detections[detections[:, 4] > self.conf]
         gt_classes = labels[:, 0].int()
@@ -169,13 +171,13 @@ class ConfusionMatrix:
             j = m0 == i
             if n and sum(j) == 1:
                 self.matrix[detection_classes[m1[j]], gc] += 1  # correct
-            else:
-                self.matrix[self.nc, gc] += 1  # true background
+            # else:
+            #     self.matrix[self.nc, gc] += 1  # true background
 
-        if n:
-            for i, dc in enumerate(detection_classes):
-                if not any(m1 == i):
-                    self.matrix[dc, self.nc] += 1  # predicted background
+        # if n:
+        #     for i, dc in enumerate(detection_classes):
+        #         if not any(m1 == i):
+        #             self.matrix[dc, self.nc] += 1  # predicted background
 
     def tp_fp(self):
         tp = self.matrix.diagonal()  # true positives
@@ -194,14 +196,14 @@ class ConfusionMatrix:
         nc, nn = self.nc, len(names)  # number of classes, names
         sn.set(font_scale=1.0 if nc < 50 else 0.8)  # for label size
         labels = (0 < nn < 99) and (nn == nc)  # apply names to ticklabels
-        ticklabels = (names + ['background']) if labels else 'auto'
+        # ticklabels = (names + ['background']) if labels else 'auto'
+        ticklabels = (names) if labels else 'auto'
         with warnings.catch_warnings():
             warnings.simplefilter('ignore')  # suppress empty matrix RuntimeWarning: All-NaN slice encountered
             sn.heatmap(array,
                        ax=ax,
                        annot=nc < 30,
-                       annot_kws={
-                           'size': 8},
+                       annot_kws={'size': 8},
                        cmap='Blues',
                        fmt='.2f',
                        square=True,

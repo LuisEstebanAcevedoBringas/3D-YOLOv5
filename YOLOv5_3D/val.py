@@ -29,7 +29,7 @@ from pathlib import Path
 import numpy as np
 import torch
 from tqdm import tqdm
-
+import json
 FILE = Path(__file__).resolve()
 ROOT = FILE.parents[0]  # YOLOv5 root directory
 if str(ROOT) not in sys.path:
@@ -58,17 +58,19 @@ def save_one_txt(predn, save_conf, shape, file):
             f.write(('%g ' * len(line)).rstrip() % line + '\n')
 
 
-def save_one_json(predn, jdict, path, class_map):
+def save_one_json(predn, jdict, path, class_map, gt_box, gtlabel):
     # Save one JSON result {"image_id": 42, "category_id": 18, "bbox": [258.15, 41.29, 348.26, 243.78], "score": 0.236}
     image_id = int(path.stem) if path.stem.isnumeric() else path.stem
     box = xyxy2xywh(predn[:, :4])  # xywh
     box[:, :2] -= box[:, 2:] / 2  # xy center to top-left corner
+
     for p, b in zip(predn.tolist(), box.tolist()):
-        jdict.append({
-            'image_id': image_id,
+        jdict.append({ 'key':image_id, 'value': {
             'category_id': class_map[int(p[5])],
             'bbox': [round(x, 3) for x in b],
-            'score': round(p[4], 5)})
+            'score': round(p[4], 5),
+            'gt_bbox': [round(x,3) for x in gt_box],
+            'gt_label': gtlabel}})
 
 
 def process_batch(detections, labels, iouv):
@@ -123,9 +125,9 @@ def run(
         model=None,
         dataloader=None,
         save_dir=Path(''),
-        plots=True,
+        plots=False,
         callbacks=Callbacks(),
-        clip_size = 3,
+        clip_size = 9,
         compute_loss=None,
 ):
     # Initialize/load model and set device
@@ -142,6 +144,7 @@ def run(
         (save_dir / 'labels' if save_txt else save_dir).mkdir(parents=True, exist_ok=True)  # make dir
 
         # Load model
+        print(model)
         model = DetectMultiBackend(weights, device=device, dnn=dnn, data=data, fp16=half)
         stride, pt, jit, engine = model.stride, model.pt, model.jit, model.engine
         imgsz = check_img_size(imgsz, s=stride)  # check image size
@@ -159,6 +162,7 @@ def run(
 
     # Configure
     model.eval()
+    print(model)
     cuda = device.type != 'cpu'
     is_coco = isinstance(data.get('val'), str) and data['val'].endswith(f'coco{os.sep}val2017.txt')  # COCO dataset
     nc = 1 if single_cls else int(data['nc'])  # number of classes
@@ -171,7 +175,7 @@ def run(
             ncm = model.model.nc
             assert ncm == nc, f'{weights} ({ncm} classes) trained on different --data than what you passed ({nc} ' \
                                 f'classes). Pass correct combination of --weights and --data that are trained together.'
-        model.warmup(imgsz=(1 if pt else batch_size, 3, imgsz, imgsz))  # warmup
+        model.warmup(imgsz=(1 if pt else batch_size, 3, 9, imgsz, imgsz))  # warmup
         pad, rect = (0.0, False) if task == 'speed' else (0.5, pt)  # square inference for benchmarks
         task = task if task in ('train', 'val', 'test') else 'val'  # path to train/val/test images
         dataloader = create_dataloader3D(data[task],
@@ -213,7 +217,6 @@ def run(
         # Inference
         with dt[1]:
             preds, train_out = model(im) if compute_loss else (model(im, augment=augment), None)
-
         # Loss
         if compute_loss:
             loss += compute_loss(train_out, targets)[1]  # box, obj, cls
@@ -229,7 +232,6 @@ def run(
                                         multi_label=True,
                                         agnostic=single_cls,
                                         max_det=max_det)
-
         # Metrics
         for si, pred in enumerate(preds):
             labels = targets[targets[:, 0] == si, 1:]
@@ -257,17 +259,21 @@ def run(
                 scale_boxes(im[si].shape[1:], tbox, shape, shapes[si][1])  # native-space labels
                 labelsn = torch.cat((labels[:, 0:1], tbox), 1)  # native-space labels
                 correct = process_batch(predn, labelsn, iouv)
+
                 if plots:
                     confusion_matrix.process_batch(predn, labelsn)
             stats.append((correct, pred[:, 4], pred[:, 5], labels[:, 0]))  # (correct, conf, pcls, tcls)
-
+            # print("correct: \n", correct)
+            # print("/*/*/*/* pred\n",pred)
             # Save/log
             if save_txt:
                 save_one_txt(predn, save_conf, shape, file=save_dir / 'labels' / f'{path.stem}.txt')
             if save_json:
-                save_one_json(predn, jdict, path, class_map)  # append to COCO-JSON dictionary
+                gb =  [float(bx) for bx in labelsn[0]]
+                gtd = int(gb[0])
+                gb.pop(0)
+                save_one_json(predn, jdict, path, class_map, [gb[0], gb[1], gb[2] - gb[0],  gb[3] - gb[1] ] , gtd)  # append to COCO-JSON dictionary
             callbacks.run('on_val_image_end', pred, predn, path, names, im[si])
-
         # Plot images
         if plots and batch_i < 3:
             plot_images(im, targets, paths, save_dir / f'val_batch{batch_i}_labels.jpg', names)  # labels
@@ -279,7 +285,29 @@ def run(
     stats = [torch.cat(x, 0).cpu().numpy() for x in zip(*stats)]  # to numpy
     if len(stats) and stats[0].any():
         tp, fp, p, r, f1, ap, ap_class = ap_per_class(*stats, plot=plots, save_dir=save_dir, names=names)
+        # print(ap)
+        # print(ap_class)
+        video_ap = ap[:, 0]
+        # print(video_ap)
+        # print(type(video_ap))
+        # print(type(video_ap))
+        video_ap = video_ap.tolist()
+        # print(video_ap)
+        # a = [str(video_ap) for video_ap in video_ap]
+
+        # with open('./video_mAP/results_C0_n9.json', 'r') as file:
+        #     datos = json.load(file)
+
+        # datos.append(video_ap)
+
+        # with open('./video_mAP/results_C0_n9.json', 'w') as file:
+        #     json.dump(datos, file)
+
+        # print(video_ap)
+######################################################################################################################################################
+# debo de sacar ap[:, 0] de cada video
         ap50, ap = ap[:, 0], ap.mean(1)  # AP@0.5, AP@0.5:0.95
+        # print(ap50)
         mp, mr, map50, map = p.mean(), r.mean(), ap50.mean(), ap.mean()
     nt = np.bincount(stats[3].astype(int), minlength=nc)  # number of targets per class
 
@@ -344,24 +372,24 @@ def run(
 
 def parse_opt():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--data', type=str, default=ROOT / 'data/coco128.yaml', help='dataset.yaml path')
-    parser.add_argument('--weights', nargs='+', type=str, default=ROOT / 'yolov5s.pt', help='model path(s)')
-    parser.add_argument('--batch-size', type=int, default=32, help='batch size')
+    parser.add_argument('--data', type=str, default=ROOT / 'C:/Users/Luis Bringas/Desktop/NEW_IPN_yamls/6TK53_11_L_46_#312.yaml', help='dataset.yaml path')
+    parser.add_argument('--weights', nargs='+', type=str, default=ROOT / './others/final_models/yowo_ipn_16f_best.pt', help='model path(s)')
+    parser.add_argument('--batch-size', type=int, default=2, help='batch size')
     parser.add_argument('--imgsz', '--img', '--img-size', type=int, default=640, help='inference size (pixels)')
-    parser.add_argument('--conf-thres', type=float, default=0.001, help='confidence threshold')
-    parser.add_argument('--iou-thres', type=float, default=0.6, help='NMS IoU threshold')
-    parser.add_argument('--max-det', type=int, default=300, help='maximum detections per image')
+    parser.add_argument('--conf-thres', type=float, default=0.25, help='confidence threshold')
+    parser.add_argument('--iou-thres', type=float, default=0.45, help='NMS IoU threshold')
+    parser.add_argument('--max-det', type=int, default=5, help='maximum detections per image')
     parser.add_argument('--task', default='val', help='train, val, test, speed or study')
     parser.add_argument('--device', default='', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
     parser.add_argument('--workers', type=int, default=8, help='max dataloader workers (per RANK in DDP mode)')
-    parser.add_argument('--single-cls', action='store_true', help='treat as single-class dataset')
+    parser.add_argument('--single-cls', action='store_true', help='treat as single-class dataset', default=False)
     parser.add_argument('--augment', action='store_true', help='augmented inference')
     parser.add_argument('--verbose', action='store_true', help='report mAP by class')
-    parser.add_argument('--save-txt', action='store_true', help='save results to *.txt')
+    parser.add_argument('--save-txt', default=True, action='store_true', help='save results to *.txt')
     parser.add_argument('--save-hybrid', action='store_true', help='save label+prediction hybrid results to *.txt')
     parser.add_argument('--save-conf', action='store_true', help='save confidences in --save-txt labels')
-    parser.add_argument('--save-json', action='store_true', help='save a COCO-JSON results file')
-    parser.add_argument('--project', default=ROOT / 'runs/val', help='save to project/name')
+    parser.add_argument('--save-json', action='store_true', help='save a COCO-JSON results file', default=True)
+    parser.add_argument('--project', default=ROOT / 'C:/Users/Luis Bringas/Desktop/NEW_IPN_n9/', help='save to project/name')
     parser.add_argument('--name', default='exp', help='save to project/name')
     parser.add_argument('--exist-ok', action='store_true', help='existing project/name ok, do not increment')
     parser.add_argument('--half', action='store_true', help='use FP16 half-precision inference')
@@ -412,3 +440,23 @@ def main(opt):
 if __name__ == '__main__':
     opt = parse_opt()
     main(opt)
+
+# Mostrar figura en donde seria ieal que aprte e mostrar el input de mas un frames y que tambien muestre la aplikcacion de porque estamos haciendo esto, la apliacion final es itneractuar ocn los disopositivos electronciso entonces quermeos obvia las manos atras
+
+# Para el lunes a primera hora tener la priemra mitad del paper ya con correcciones atacadas
+
+# Para le miercoles tener la segunda mitad del paper
+
+# Quitar clip sipe de tabla 2 y solo dejar n = 6 y habalr sobre como estas las estructuas, comos se diferenciuas
+
+# Hablar de la tabla 2 con cs 6, y decir que el C3 es la mejor pero los flops se pasan de verga y la mejor es usar C0
+
+# En la siguiente seccion solo hablar de C0, hablar la tabla de con los resultados de 2 a 9 con C0, esta tabla es la imporante para mostrar los Frames mAP y video mAP
+
+# La figura 2 y la tabla 1 son redundantes, solo dejar la tabla para mostrar las arquitectuas, quitar la figura 2.
+
+# Investigar como poner bien chidas las matrices de confusion
+
+# Mostrar las matrices en el clip analisis, con la matrices solo matras la de 9 que es la que dio mejores resultados vs la mas eficiente
+
+# Tabla de 3 mejorar con clip de 2 a 9 con C0, mostrar flops de cada arquitectura

@@ -70,6 +70,8 @@ class Conv_3D(nn.Module):
         # print("input Conv3d", x.size())
         # print("output Conv3d", self.act(self.bn(self.conv(x))).size())
         # pdb.set_trace()
+        # print(x.size())
+        # pdb.set_trace()
         x = self.act(self.bn(self.conv(x)))
         return x[:, :, 0, :, :] if x.shape[2] == 1 else x
 
@@ -584,7 +586,8 @@ class DetectMultiBackend(nn.Module):
 
     def forward(self, im, augment=False, visualize=False):
         # YOLOv5 MultiBackend inference
-        b, ch, h, w = im.shape  # batch, channel, height, width
+        b, ch, cs, h, w = im.shape  # batch, channel, height, width
+        #b, ch, h, w = im.shape  # batch, channel, height, width
         if self.fp16 and im.dtype != torch.float16:
             im = im.half()  # to FP16
         if self.nhwc:
